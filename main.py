@@ -42,6 +42,9 @@ async def detect_scam(
     # We extract from the LATEST message AND potential history if needed.
     # For optimization, we just scan current text.
     intelligence = extract_all(user_msg_text)
+    
+    # Defaults in case not defined
+    msg_count = len(event.conversationHistory) + 1
 
     # 5. Agentic Engagement
     if is_scam:
