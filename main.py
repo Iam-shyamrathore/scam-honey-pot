@@ -121,5 +121,6 @@ async def detect_scam(
 
 if __name__ == "__main__":
     import uvicorn
-    # Use port 8001 to avoid conflict if 8000 is zombie
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    # Use PORT env var if available (DigitalOcean), else 8001
+    port = int(os.getenv("PORT", 8001))
+    uvicorn.run(app, host="0.0.0.0", port=port)
