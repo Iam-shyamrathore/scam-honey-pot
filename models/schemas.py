@@ -1,6 +1,15 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 
+# --- Shared Models (Must be defined first) ---
+
+class ExtractedIntelligence(BaseModel):
+    bankAccounts: List[str] = []
+    upiIds: List[str] = []
+    phishingLinks: List[str] = []
+    phoneNumbers: List[str] = []
+    suspiciousKeywords: List[str] = []
+
 # --- Input Models ---
 
 class Message(BaseModel):
@@ -30,13 +39,6 @@ class AgentResponse(BaseModel):
     engagement_metrics: Optional[Dict[str, Any]] = None
 
 # --- Callback Models ---
-
-class ExtractedIntelligence(BaseModel):
-    bankAccounts: List[str] = []
-    upiIds: List[str] = []
-    phishingLinks: List[str] = []
-    phoneNumbers: List[str] = []
-    suspiciousKeywords: List[str] = []
 
 class FinalResultPayload(BaseModel):
     sessionId: str

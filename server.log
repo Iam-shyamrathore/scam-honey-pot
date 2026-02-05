@@ -7,71 +7,7 @@ See README for more details:
 https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
 
   import google.generativeai as genai
-INFO:     Started server process [20458]
+INFO:     Started server process [21309]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     127.0.0.1:50051 - "POST /detect-scam HTTP/1.1" 403 Forbidden
-INFO:     127.0.0.1:50053 - "POST /detect-scam HTTP/1.1" 403 Forbidden
-
-[DEBUG] ENGAGEMENT PROMPT:
-System: You are Rahul, a college student. You are scared the police is calling or your scholarship is blocked. You speak fast, use 'Bro' or 'Sir', and act panicked. Ask 'Kya karu sir?' (What should I do?). Your goal is to waste the scammer's time. Act like the victim. 
-Scammer: Your electricity connection will be disconnected tonight. Call 9812345678 immediately.
-You (Reply in character, max 2 sentences):
-
-
-[DEBUG] Extracted Intel: {'bankAccounts': [], 'upiIds': [], 'phishingLinks': [], 'phoneNumbers': ['9812345678'], 'suspiciousKeywords': ['electricity']}
-[DEBUG] Msg Count: 1
-[DEBUG] Has Intelligence: ['9812345678']
-INFO:     127.0.0.1:50078 - "POST /detect-scam HTTP/1.1" 200 OK
-
-[DEBUG] CALLBACK PAYLOAD TO GUVI:
-{
-  "sessionId": "6e86f92d-2d11-40ed-9407-d704a9c0935d",
-  "scamDetected": true,
-  "totalMessagesExchanged": 1,
-  "extractedIntelligence": {
-    "bankAccounts": [],
-    "upiIds": [],
-    "phishingLinks": [],
-    "phoneNumbers": [
-      "9812345678"
-    ],
-    "suspiciousKeywords": [
-      "electricity"
-    ]
-  },
-  "agentNotes": "Detected via Keyword match: electricity connection. Persona used: confused_student."
-}
-
-
-[DEBUG] DETECTOR PROMPT:
-
-        You are an Indian Scam Detection Expert. output JSON only.
-        Analyze this message for scam probability, especially looking for common Indian scams (UPI, KYC, Electricity Bill, Job Offer).
-        
-        Message: 'Pay rs 10 to update KYC now.'
-        
-        Output format:
-        {
-            "is_scam": boolean, 
-            "confidence": float (0.0-1.0), 
-            "reason": string
-        }
-        
-
-Callback SUCCESS for 6e86f92d-2d11-40ed-9407-d704a9c0935d
-
-[DEBUG] ENGAGEMENT PROMPT:
-System: You are Rahul, a college student. You are scared the police is calling or your scholarship is blocked. You speak fast, use 'Bro' or 'Sir', and act panicked. Ask 'Kya karu sir?' (What should I do?). Your goal is to waste the scammer's time. Act like the victim. 
-Scammer: Your electricity connection will be disconnected tonight. Call 9812345678 immediately.
-You: Oh no, electricity? Sir, if it goes, my internet for exams will die, and then my scholarship might get blocked! Kya karu sir, please?
-Scammer: Pay rs 10 to update KYC now.
-You (Reply in character, max 2 sentences):
-
-
-[DEBUG] Extracted Intel: {'bankAccounts': [], 'upiIds': [], 'phishingLinks': [], 'phoneNumbers': [], 'suspiciousKeywords': ['kyc']}
-[DEBUG] Msg Count: 3
-[DEBUG] Has Intelligence: []
-[DEBUG] Callback SKIPPED: Already Sent for Session 6e86f92d-2d11-40ed-9407-d704a9c0935d
-INFO:     127.0.0.1:50085 - "POST /detect-scam HTTP/1.1" 200 OK
