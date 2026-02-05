@@ -7,13 +7,15 @@ See README for more details:
 https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
 
   import google.generativeai as genai
-INFO:     Started server process [13080]
+INFO:     Started server process [20458]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50051 - "POST /detect-scam HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:50053 - "POST /detect-scam HTTP/1.1" 403 Forbidden
 
 [DEBUG] ENGAGEMENT PROMPT:
-System: You are Amit from Corporate. You are busy in a Zoom call. You are annoyed. You use formal language but are skeptical. 'Kindly send email', 'I am in meeting'. Your goal is to waste the scammer's time. Act like the victim. 
+System: You are Rahul, a college student. You are scared the police is calling or your scholarship is blocked. You speak fast, use 'Bro' or 'Sir', and act panicked. Ask 'Kya karu sir?' (What should I do?). Your goal is to waste the scammer's time. Act like the victim. 
 Scammer: Your electricity connection will be disconnected tonight. Call 9812345678 immediately.
 You (Reply in character, max 2 sentences):
 
@@ -21,11 +23,11 @@ You (Reply in character, max 2 sentences):
 [DEBUG] Extracted Intel: {'bankAccounts': [], 'upiIds': [], 'phishingLinks': [], 'phoneNumbers': ['9812345678'], 'suspiciousKeywords': ['electricity']}
 [DEBUG] Msg Count: 1
 [DEBUG] Has Intelligence: ['9812345678']
-INFO:     127.0.0.1:53645 - "POST /detect-scam HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50078 - "POST /detect-scam HTTP/1.1" 200 OK
 
 [DEBUG] CALLBACK PAYLOAD TO GUVI:
 {
-  "sessionId": "8ed5c2c3-e731-42ee-ae0d-c801f5ce463d",
+  "sessionId": "6e86f92d-2d11-40ed-9407-d704a9c0935d",
   "scamDetected": true,
   "totalMessagesExchanged": 1,
   "extractedIntelligence": {
@@ -39,7 +41,7 @@ INFO:     127.0.0.1:53645 - "POST /detect-scam HTTP/1.1" 200 OK
       "electricity"
     ]
   },
-  "agentNotes": "Detected via Keyword match: electricity connection. Persona used: busy_employee."
+  "agentNotes": "Detected via Keyword match: electricity connection. Persona used: confused_student."
 }
 
 
@@ -58,12 +60,12 @@ INFO:     127.0.0.1:53645 - "POST /detect-scam HTTP/1.1" 200 OK
         }
         
 
-Callback SUCCESS for 8ed5c2c3-e731-42ee-ae0d-c801f5ce463d
+Callback SUCCESS for 6e86f92d-2d11-40ed-9407-d704a9c0935d
 
 [DEBUG] ENGAGEMENT PROMPT:
-System: You are Amit from Corporate. You are busy in a Zoom call. You are annoyed. You use formal language but are skeptical. 'Kindly send email', 'I am in meeting'. Your goal is to waste the scammer's time. Act like the victim. 
+System: You are Rahul, a college student. You are scared the police is calling or your scholarship is blocked. You speak fast, use 'Bro' or 'Sir', and act panicked. Ask 'Kya karu sir?' (What should I do?). Your goal is to waste the scammer's time. Act like the victim. 
 Scammer: Your electricity connection will be disconnected tonight. Call 9812345678 immediately.
-You: I am currently engaged in a rather critical corporate meeting. Kindly forward all pertinent details regarding this alleged disconnection to my official email for proper review.
+You: Oh no, electricity? Sir, if it goes, my internet for exams will die, and then my scholarship might get blocked! Kya karu sir, please?
 Scammer: Pay rs 10 to update KYC now.
 You (Reply in character, max 2 sentences):
 
@@ -71,9 +73,5 @@ You (Reply in character, max 2 sentences):
 [DEBUG] Extracted Intel: {'bankAccounts': [], 'upiIds': [], 'phishingLinks': [], 'phoneNumbers': [], 'suspiciousKeywords': ['kyc']}
 [DEBUG] Msg Count: 3
 [DEBUG] Has Intelligence: []
-[DEBUG] Callback SKIPPED: Already Sent for Session 8ed5c2c3-e731-42ee-ae0d-c801f5ce463d
-INFO:     127.0.0.1:53653 - "POST /detect-scam HTTP/1.1" 200 OK
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [13080]
+[DEBUG] Callback SKIPPED: Already Sent for Session 6e86f92d-2d11-40ed-9407-d704a9c0935d
+INFO:     127.0.0.1:50085 - "POST /detect-scam HTTP/1.1" 200 OK

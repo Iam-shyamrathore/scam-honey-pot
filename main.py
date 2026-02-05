@@ -114,9 +114,14 @@ async def detect_scam(
         reply_text = "Hello, how can I help you?"
 
     # 7. Response
+    # 7. Response
     return AgentResponse(
         status="success",
-        reply=reply_text
+        reply=reply_text,
+        scam_detected=is_scam,
+        confidence_score=confidence,
+        extracted_intelligence=intelligence,
+        engagement_metrics={"turn_count": msg_count}
     )
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import time
 import uuid
 
 BASE_URL = "http://localhost:8001"
-API_KEY = "AAAkE8gmGj+6pZtZsdiTviRoh3NJl+PX2fvss612yt4dx5vRRfVAQqRn0+ZhVtzI"
+API_KEY = "xMxvg9qrvemKcQL4H1RkrodHFgw6Z3jdHYDG52By62LdngeeASaA49+m4rnubiBz"
 
 def test_official_flow():
     session_id = str(uuid.uuid4())

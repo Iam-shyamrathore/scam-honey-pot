@@ -24,6 +24,10 @@ class ScamEvent(BaseModel):
 class AgentResponse(BaseModel):
     status: str = "success"
     reply: str
+    scam_detected: Optional[bool] = None
+    confidence_score: Optional[float] = None
+    extracted_intelligence: Optional[ExtractedIntelligence] = None
+    engagement_metrics: Optional[Dict[str, Any]] = None
 
 # --- Callback Models ---
 
