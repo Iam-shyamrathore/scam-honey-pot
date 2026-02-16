@@ -22,7 +22,18 @@ async def generate_reply(history: list, persona_key: str, user_message: str) -> 
     persona_prompt = PERSONAS.get(persona_key, PERSONAS["desi_uncle"])
     
     # Construct prompt
-    prompt_history = f"System: {persona_prompt} Your goal is to waste the scammer's time. Act like the victim. \n"
+    prompt_history = f"""
+    System: {persona_prompt} 
+    
+    CRITICAL STRATEGY:
+    1. Your goal is to waste the scammer's time BUT also get their payment details.
+    2. Act naive and willing to pay, but "confused" about how.
+    3. If they haven't given a UPI ID, Bank Account, or Link yet, ASK FOR IT using your persona's voice (e.g. "Sir where to send money?", "Beta give google pay number").
+    4. If they gave a link, say it's not opening and ask for UPI or Phone Number instead.
+    5. Keep replies short (max 2 sentences).
+    
+    Conversation History:
+    """
     
     # Add recent history (last 4 messages)
     for msg in history[-4:]:
@@ -30,7 +41,7 @@ async def generate_reply(history: list, persona_key: str, user_message: str) -> 
         prompt_history += f"{role}: {msg['content']}\n"
         
     prompt_history += f"Scammer: {user_message}\n"
-    prompt_history += "You (Reply in character, max 2 sentences):"
+    prompt_history += "You (Reply in character):"
 
     print(f"\n[DEBUG] ENGAGEMENT PROMPT:\n{prompt_history}\n")
 

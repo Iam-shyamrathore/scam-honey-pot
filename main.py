@@ -32,16 +32,16 @@ async def detect_scam(
     session_id = event.sessionId
     
     # 3. Scam Detection
-    # Hybrid Check
-    is_scam, confidence, reason = check_rules(user_msg_text)
-    if not is_scam:
-        # If no keywords, check AI
-        is_scam, confidence, reason = await classify_with_ai(user_msg_text)
+    # 3. Scam Detection
+    # AI - First Approach (Full Intelligence)
+    # check_rules is now just a fallback/signal, we primarily use AI
+    is_scam, confidence, reason, scam_type = await classify_with_ai(user_msg_text)
 
     # 4. Intelligence Extraction
     # We extract from the LATEST message AND potential history if needed.
     # For optimization, we just scan current text.
-    intelligence = extract_all(user_msg_text)
+    # Now async because it uses AI
+    intelligence = await extract_all(user_msg_text)
     
     # Defaults in case not defined
     msg_count = len(event.conversationHistory) + 1

@@ -12,45 +12,52 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-2.5-flash')
 
 SCAM_KEYWORDS = [
-    "account blocked", "kyc pending", "click this link", "verify immediately", 
-    "urgent", "send otp", "share upi", "lottery", "winner", "prize", 
+    "account blocked", "kyc pending", "click this link", "click here", "verify immediately", 
+    "urgent", "send otp", "share upi", "lottery", "winner", "prize", "claim", "offer",
+    "selected for", "iphone", "rs.",
     "bank account suspended", "debit card blocked",
     # Indian context keywords
     "aadhar", "pan card", "rbi", "paytm", "phonepe", "gpay", 
     "light bill", "electricity connection", "challan"
 ]
 
+
 def check_rules(text: str) -> Tuple[bool, float, str]:
     """
     Returns (is_scam, initial_confidence, reason)
+    Legacy: Keywords are now only used as a signal in the AI prompt or as a fallback.
+    We return False here to force AI processing for "Full Intelligence".
     """
-    text_lower = text.lower()
-    for keyword in SCAM_KEYWORDS:
-        if keyword in text_lower:
-            return True, 0.85, f"Keyword match: {keyword}"
-    
-    return False, 0.0, "No keywords found"
+    return False, 0.0, "Proceed to AI Check"
 
-async def classify_with_ai(text: str) -> Tuple[bool, float, str]:
+async def classify_with_ai(text: str) -> Tuple[bool, float, str, str]:
     """
     Uses Gemini to classify scam.
-    Returns (is_scam, confidence, reasoning)
+    Returns (is_scam, confidence, reasoning, scam_type)
     """
     try:
         prompt = f"""
-        You are an Indian Scam Detection Expert. output JSON only.
-        Analyze this message for scam probability, especially looking for common Indian scams (UPI, KYC, Electricity Bill, Job Offer).
+        You are an Indian Scam Detection Expert. Output JSON only.
+        Analyze this message for scam probability.
         
         Message: '{text}'
+        
+        Context & Rules:
+        1. Context: User is receiving this message (SMS/WhatsApp/Email).
+        2. Indian Scams: Look for UPI fraud, KYC pending, Electricity Bill cut, Job Offers, Lottery, Fake Rewards/iPhone.
+        3. Phishing: Suspicious links (bit.ly, fake domains) are 100% scam.
+        4. Urgency: 'Immediately', 'Within 2 hours', 'Account blocked' are strong indicators.
+        5. Unsolicited: If it asks for money/OTP/personal info out of nowhere, it is a scam.
         
         Output format:
         {{
             "is_scam": boolean, 
             "confidence": float (0.0-1.0), 
-            "reason": string
+            "reason": "Brief explanation",
+            "scam_type": "Bank Fraud" | "UPI Fraud" | "Phishing" | "Job Scam" | "Other" | "None"
         }}
         """
-        print(f"\n[DEBUG] DETECTOR PROMPT:\n{prompt}\n")
+        # print(f"\n[DEBUG] DETECTOR PROMPT:\n{prompt}\n")
         response = await model.generate_content_async(prompt)
         
         import json
@@ -58,8 +65,18 @@ async def classify_with_ai(text: str) -> Tuple[bool, float, str]:
         raw_text = response.text.replace("```json", "").replace("```", "").strip()
         result = json.loads(raw_text)
         
-        return result.get("is_scam", False), result.get("confidence", 0.0), result.get("reason", "AI analysis")
+        return (
+            result.get("is_scam", False), 
+            result.get("confidence", 0.0), 
+            result.get("reason", "AI analysis"),
+            result.get("scam_type", "None")
+        )
     except Exception as e:
         print(f"AI Classification Error: {e}")
-        # Fallback to rule-based or neutral
-        return False, 0.0, "AI Error"
+        # Fallback to keyword check if AI fails
+        text_lower = text.lower()
+        for keyword in SCAM_KEYWORDS:
+             if keyword in text_lower:
+                 return True, 0.85, f"Keyword match (Fallback): {keyword}", "Unknown"
+        return False, 0.0, "AI Error", "None"
+
