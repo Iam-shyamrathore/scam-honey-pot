@@ -174,5 +174,81 @@ def run_test():
             for issue in res["issues"]:
                 print(f"   - {issue}")
 
+
+def run_multi_turn_simulation():
+    print(f"\n{'='*60}")
+    print("Testing Multi-Turn Intelligence Aggregation")
+    print(f"{'='*60}")
+    
+    # Conversation flow from user request
+    turns = [
+        {"sender": "scammer", "text": "URGENT: Your SBI account has been compromised. Share your account number and OTP immediately."},
+        {"sender": "scammer", "text": "Please transfer Rs.5000 to UPI ID scammer.fraud@fakebank"}, # Turn 3 in example
+        {"sender": "scammer", "text": "Please transfer Rs.5000 to account number 1234567890123456"}, # Turn 7
+        {"sender": "scammer", "text": "Here is a secure payment link: https://pay.fakebank.com/transfer?to=1234567890123456"} # Turn 9
+    ]
+    
+    session_id = str(uuid.uuid4())
+    history = []
+    headers = {"x-api-key": API_KEY, "Content-Type": "application/json"}
+    
+    print(f"Session: {session_id}")
+    
+    extracted_so_far = {"upiIds": [], "bankAccounts": [], "phishingLinks": []}
+    
+    for i, turn in enumerate(turns):
+        print(f"\n--- Turn {i+1} ---")
+        print(f"Scammer: {turn['text']}")
+        
+        payload = {
+            "sessionId": session_id,
+            "message": {
+                "sender": "scammer",
+                "text": turn['text'],
+                "timestamp": int(time.time() * 1000)
+            },
+            "conversationHistory": history,
+            "metadata": {"channel": "WhatsApp", "locale": "IN"}
+        }
+        
+        try:
+            res = requests.post(f"{BASE_URL}/detect-scam", json=payload, headers=headers, timeout=30)
+            if res.status_code == 200:
+                data = res.json()
+                intel = data.get("extracted_intelligence", {})
+                print(f"✅ Reply: {data.get('reply')}")
+                print(f"   Extracted Now: {json.dumps(intel)}")
+                
+                # Update history for next turn
+                history.append(payload["message"])
+                history.append({
+                    "sender": "user",
+                    "text": data.get("reply"),
+                    "timestamp": int(time.time() * 1000)
+                })
+                
+                # Check for accumulation
+                if intel.get("upiIds"): extracted_so_far["upiIds"].extend(intel["upiIds"])
+                if intel.get("bankAccounts"): extracted_so_far["bankAccounts"].extend(intel["bankAccounts"])
+                if intel.get("phishingLinks"): extracted_so_far["phishingLinks"].extend(intel["phishingLinks"])
+                
+            else:
+                print(f"❌ Error: {res.status_code}")
+                
+        except Exception as e:
+            print(f"❌ Exception: {e}")
+
+    print("\n--- Final Aggregated Intelligence (Simulated) ---")
+    print(json.dumps(extracted_so_far, indent=2))
+    
+    # Validation
+    if (len(extracted_so_far["upiIds"]) > 0 and 
+        len(extracted_so_far["bankAccounts"]) > 0 and 
+        len(extracted_so_far["phishingLinks"]) > 0):
+        print("✅ SUCCESS: Captured UPI, Bank, AND Link across turns.")
+    else:
+        print("❌ FAILURE: Missing some intelligence.")
+
 if __name__ == "__main__":
     run_test()
+    run_multi_turn_simulation()
