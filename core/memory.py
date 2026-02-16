@@ -1,4 +1,5 @@
 from models.schemas import ExtractedIntelligence
+from typing import Dict, Any
 
 # Global in-memory storage for hackathon speed
 # Structure: {session_id: {"last_intel_count": int, "msg_count": int}}
