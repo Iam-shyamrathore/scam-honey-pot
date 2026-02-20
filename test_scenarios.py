@@ -249,6 +249,71 @@ def run_multi_turn_simulation():
     else:
         print("❌ FAILURE: Missing some intelligence.")
 
+
+def run_kyc_simulation():
+    print(f"\n{'='*60}")
+    print("Testing KYC/Red-Flag Probing Strategy")
+    print(f"{'='*60}")
+    
+    # Scammer says KYC is pending
+    turns = [
+        {"sender": "scammer", "text": "Dear customer, your PAN card is not linked to your SBI account. Your account will be suspended today. Please verify your KYC immediately."},
+        {"sender": "scammer", "text": "Download the SBI Quick Support app from this link to verify: http://sbi-kyc-update.apk"}, 
+    ]
+    
+    session_id = str(uuid.uuid4())
+    history = []
+    headers = {"x-api-key": API_KEY, "Content-Type": "application/json"}
+    extracted_so_far = {"suspiciousKeywords": [], "phishingLinks": []}
+    
+    for i, turn in enumerate(turns):
+        print(f"\n--- Turn {i+1} ---")
+        print(f"Scammer: {turn['text']}")
+        
+        payload = {
+            "sessionId": session_id,
+            "message": {
+                "sender": "scammer",
+                "text": turn['text'],
+                "timestamp": int(time.time() * 1000)
+            },
+            "conversationHistory": history,
+            "metadata": {"channel": "WhatsApp", "locale": "IN"}
+        }
+        
+        try:
+            res = requests.post(f"{BASE_URL}/detect-scam", json=payload, headers=headers, timeout=30)
+            if res.status_code == 200:
+                data = res.json()
+                intel = data.get("extracted_intelligence", {})
+                print(f"✅ Reply: {data.get('reply')}")
+                print(f"   Extracted Keywords: {intel.get('suspiciousKeywords')}")
+                
+                history.append(payload["message"])
+                history.append({
+                    "sender": "user",
+                    "text": data.get("reply"),
+                    "timestamp": int(time.time() * 1000)
+                })
+                if intel.get("suspiciousKeywords"): extracted_so_far["suspiciousKeywords"].extend(intel["suspiciousKeywords"])
+                if intel.get("phishingLinks"): extracted_so_far["phishingLinks"].extend(intel["phishingLinks"])
+            else:
+                print(f"❌ Error: {res.status_code}")
+        except Exception as e:
+            print(f"❌ Exception: {e}")
+
+    print("\n--- Validation ---")
+    if len(extracted_so_far["suspiciousKeywords"]) > 0:
+        print("✅ SUCCESS: Extracted suspicious keywords (Red Flags).")
+    else:
+        print("❌ FAILURE: Missed suspicious keywords.")
+        
+    if len(extracted_so_far["phishingLinks"]) > 0:
+        print("✅ SUCCESS: Extracted phishing link from app download request.")
+    else:
+         print("❌ FAILURE: Missed phishing link.")
+
 if __name__ == "__main__":
-    run_test()
-    run_multi_turn_simulation()
+    # run_test()
+    # run_multi_turn_simulation()
+    run_kyc_simulation()

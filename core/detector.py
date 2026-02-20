@@ -24,16 +24,27 @@ SCAM_KEYWORDS = [
 
 def check_rules(text: str) -> Tuple[bool, float, str]:
     """
-    Returns (is_scam, initial_confidence, reason)
-    Legacy: Keywords are now only used as a signal in the AI prompt or as a fallback.
-    We return False here to force AI processing for "Full Intelligence".
+    Legacy rule-based check for initial scam detection.
+    Currently acts as a passthrough to force the more intelligent AI classification.
+    
+    Args:
+        text (str): The current message text.
+        
+    Returns:
+        Tuple[bool, float, str]: (is_scam, initial_confidence, reason)
     """
     return False, 0.0, "Proceed to AI Check"
 
 async def classify_with_ai(text: str) -> Tuple[bool, float, str, str]:
     """
-    Uses Gemini to classify scam.
-    Returns (is_scam, confidence, reasoning, scam_type)
+    Uses Gemini AI to perform deep contextual classification of a potential scam message.
+    It identifies nuances like urgency, unsolicited requests, and specific Indian scam types.
+    
+    Args:
+        text (str): The user/scammer message to classify.
+        
+    Returns:
+        Tuple[bool, float, str, str]: (is_scam, confidence_score, reasoning_explanation, scam_type)
     """
     try:
         prompt = f"""

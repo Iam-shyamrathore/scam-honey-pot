@@ -19,6 +19,17 @@ def select_persona() -> str:
     return random.choice(list(PERSONAS.keys()))
 
 async def generate_reply(history: list, persona_key: str, user_message: str) -> str:
+    """
+    Generates a persona-driven response to engage the scammer and extract intelligence.
+    
+    Args:
+        history (list): A list of previous message dicts (role, content).
+        persona_key (str): The identifier for the persona to use.
+        user_message (str): The latest message from the scammer.
+        
+    Returns:
+        str: The generated reply from the honeypot bot.
+    """
     persona_prompt = PERSONAS.get(persona_key, PERSONAS["desi_uncle"])
     
     # Construct prompt
@@ -26,11 +37,12 @@ async def generate_reply(history: list, persona_key: str, user_message: str) -> 
     System: {persona_prompt} 
     
     CRITICAL STRATEGY:
-    1. Your goal is to waste the scammer's time BUT also get their payment details.
-    2. Act naive and willing to pay, but "confused" about how.
-    3. If they haven't given a UPI ID, Bank Account, or Link yet, ASK FOR IT using your persona's voice (e.g. "Sir where to send money?", "Beta give google pay number").
-    4. If they gave a link, say it's not opening and ask for UPI or Phone Number instead.
-    5. Keep replies short (max 2 sentences).
+    1. Your goal is to waste the scammer's time BUT also get their payment or malicious details.
+    2. Act naive and willing to comply, but "confused" about how.
+    3. FOR PAYMENT SCAMS: If they haven't given a UPI ID, Bank Account, or Link yet, ASK FOR IT (e.g. "Sir where to send money?", "Give google pay number").
+    4. FOR KYC/ACCOUNT BLOCKED SCAMS: If they ask for OTP or PAN card, act confused and ask: "Is there any official App I should download to do KYC?" or "Can you send the official verification link?".
+    5. If they gave a link, say it's not opening and ask for an alternative (UPI/Phone).
+    6. Keep replies short (max 2 sentences).
     
     Conversation History:
     """

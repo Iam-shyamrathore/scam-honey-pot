@@ -23,6 +23,11 @@ async def detect_scam(
     background_tasks: BackgroundTasks,
     x_api_key: str = Header(None)
 ):
+    """
+    Main webhook endpoint for the Scam Detection Honey-Pot.
+    Processes incoming messages, identifies scams, extracts intelligence (UPI, Links, Bank Accounts, Keywords),
+    and generates a persona-driven reply to engage the scammer.
+    """
     # 1. Official Auth: x-api-key header
     if x_api_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
@@ -31,21 +36,25 @@ async def detect_scam(
     user_msg_text = event.message.text
     session_id = event.sessionId
     
-    # 3. Scam Detection
-    # 3. Scam Detection
-    # AI - First Approach (Full Intelligence)
-    # check_rules is now just a fallback/signal, we primarily use AI
-    is_scam, confidence, reason, scam_type = await classify_with_ai(user_msg_text)
-
-    # 4. Intelligence Extraction
-    # Optimization: Scan WHOLE history to catch details dropped in prev turns
-    full_text = user_msg_text
-    for prev_msg in event.conversationHistory:
-        full_text += f" {prev_msg.text}"
-        
-    # Now async because it uses AI
-    intelligence = await extract_all(full_text)
+    try:
+        # 3. Scam Detection
+        # AI - First Approach (Full Intelligence)
+        # check_rules is now just a fallback/signal, we primarily use AI
+        is_scam, confidence, reason, scam_type = await classify_with_ai(user_msg_text)
     
+        # 4. Intelligence Extraction
+        # Optimization: Scan WHOLE history to catch details dropped in prev turns
+        full_text = user_msg_text
+        for prev_msg in event.conversationHistory:
+            full_text += f" {prev_msg.text}"
+            
+        # Now async because it uses AI
+        intelligence = await extract_all(full_text)
+    except Exception as e:
+        print(f"Error during AI Processing: {e}")
+        # Log the error but try to gracefully fail or return a 500
+        raise HTTPException(status_code=500, detail="Internal AI Error Processing Message")
+        
     # Defaults in case not defined
     msg_count = len(event.conversationHistory) + 1
 

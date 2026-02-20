@@ -12,6 +12,16 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-2.5-flash')
 
 async def extract_with_ai(text: str) -> ExtractedIntelligence:
+    """
+    Uses Gemini AI to extract intelligence from the conversation text.
+    Capable of identifying obfuscated payment details and nuanced red flags.
+    
+    Args:
+        text (str): The conversation history or message text to analyze.
+        
+    Returns:
+        ExtractedIntelligence: A structured object containing extracted data.
+    """
     try:
         prompt = f"""
         Extract scam intelligence from this message. Output JSON only.
@@ -23,6 +33,7 @@ async def extract_with_ai(text: str) -> ExtractedIntelligence:
         - bankAccounts: Any bank account numbers
         - upiIds: UPI IDs (e.g., name@bank)
         - phishingLinks: Suspicious URLs
+        - suspiciousKeywords: Identify key red flags, urgency tactics, or requests for sensitive info (e.g., "PAN", "Aadhar", "OTP", "urgent", "blocked", "KYC", "police", "arrest", "suspend").
         
         If nothing found for a category, use empty list [].
         
@@ -31,7 +42,8 @@ async def extract_with_ai(text: str) -> ExtractedIntelligence:
             "phoneNumbers": [],
             "bankAccounts": [],
             "upiIds": [],
-            "phishingLinks": []
+            "phishingLinks": [],
+            "suspiciousKeywords": []
         }}
         """
         response = await model.generate_content_async(prompt)
@@ -44,13 +56,23 @@ async def extract_with_ai(text: str) -> ExtractedIntelligence:
             bankAccounts=data.get("bankAccounts", []),
             upiIds=data.get("upiIds", []),
             phishingLinks=data.get("phishingLinks", []),
-            suspiciousKeywords=[]
+            suspiciousKeywords=data.get("suspiciousKeywords", [])
         )
     except Exception as e:
         print(f"AI Extraction Error: {e}")
         return ExtractedIntelligence()
 
 async def extract_all(text: str) -> ExtractedIntelligence:
+    """
+    Combines regex-based fast extraction with AI-based deep extraction to 
+    maximize the recall of scam-related intelligence (UPI, Links, Bank Accounts, Phones, Keywords).
+    
+    Args:
+        text (str): The conversation history or message text to analyze.
+        
+    Returns:
+        ExtractedIntelligence: A merged object containing all unique extracted items.
+    """
     data = ExtractedIntelligence()
     
     # 1. Regex Extraction (Fast & Precise for standard patterns)
