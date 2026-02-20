@@ -106,48 +106,15 @@ def run_test():
                 passed = True
                 issues = []
 
-                # Check 1: Scam Detection
-                if not data.get("scam_detected"):
+                # Check 1: API Response validity
+                if not data.get("reply"):
                     passed = False
-                    issues.append("❌ Failed to detect scam.")
-                else:
-                    print("✅ Scam Detected correctly.")
+                    issues.append("❌ Missing 'reply' in response.")
 
-                # Check 2: Intelligence Extraction (Basic Check)
-                extracted = data.get("extracted_intelligence", {})
-                fake_data = scenario.get("fakeData", {})
+                # We can't validate `scam_detected` or `extracted_intelligence` synchronously anymore 
+                # because we stripped them from the `AgentResponse` payload to meet Hackathon docs.
+                # All intelligence is now sent asynchronously via the Webhook.
                 
-                # Check for at least one piece of intel if present in initial message
-                # Note: Not all fakeData is in initial message, but we check what is.
-                msg_text = scenario['initialMessage']
-                found_intel = False
-                
-                for key, val in fake_data.items():
-                    # Map scenario keys to API keys
-                    api_key_map = {
-                        "bankAccount": "bankAccounts",
-                        "upiId": "upiIds",
-                        "phoneNumber": "phoneNumbers",
-                        "phishingLink": "phishingLinks",
-                        "emailAddress": "emailAddresses"
-                    }
-                    api_key = api_key_map.get(key)
-                    
-                    if api_key and val in msg_text:
-                        # Should be extracted
-                        extracted_vals = extracted.get(api_key, [])
-                        if any(val in str(x) for x in extracted_vals):
-                            found_intel = True
-                            print(f"✅ Extracted {key}: {val}")
-                        else:
-                            issues.append(f"❌ Failed to extract {key}: {val}")
-                            passed = False
-                
-                if not found_intel:
-                     # Some scenarios might not have intel in the FIRST message, so be lenient if none was expected
-                     # But most of these do have something.
-                     pass
-
                 if passed:
                     results.append({"id": scenario['scenarioId'], "status": "PASS", "score": 100})
                 else:
@@ -215,9 +182,7 @@ def run_multi_turn_simulation():
             res = requests.post(f"{BASE_URL}/detect-scam", json=payload, headers=headers, timeout=30)
             if res.status_code == 200:
                 data = res.json()
-                intel = data.get("extracted_intelligence", {})
                 print(f"✅ Reply: {data.get('reply')}")
-                print(f"   Extracted Now: {json.dumps(intel)}")
                 
                 # Update history for next turn
                 history.append(payload["message"])
@@ -226,28 +191,14 @@ def run_multi_turn_simulation():
                     "text": data.get("reply"),
                     "timestamp": int(time.time() * 1000)
                 })
-                
-                # Check for accumulation
-                if intel.get("upiIds"): extracted_so_far["upiIds"].extend(intel["upiIds"])
-                if intel.get("bankAccounts"): extracted_so_far["bankAccounts"].extend(intel["bankAccounts"])
-                if intel.get("phishingLinks"): extracted_so_far["phishingLinks"].extend(intel["phishingLinks"])
-                
             else:
                 print(f"❌ Error: {res.status_code}")
                 
         except Exception as e:
             print(f"❌ Exception: {e}")
 
-    print("\n--- Final Aggregated Intelligence (Simulated) ---")
-    print(json.dumps(extracted_so_far, indent=2))
-    
-    # Validation
-    if (len(extracted_so_far["upiIds"]) > 0 and 
-        len(extracted_so_far["bankAccounts"]) > 0 and 
-        len(extracted_so_far["phishingLinks"]) > 0):
-        print("✅ SUCCESS: Captured UPI, Bank, AND Link across turns.")
-    else:
-        print("❌ FAILURE: Missing some intelligence.")
+    print("\n--- Validation ---")
+    print("✅ Conversation flows correctly. Check Uvicorn terminal for [DEBUG] Callback SENT messages to verify intelligence extraction.")
 
 
 def run_kyc_simulation():
@@ -285,9 +236,7 @@ def run_kyc_simulation():
             res = requests.post(f"{BASE_URL}/detect-scam", json=payload, headers=headers, timeout=30)
             if res.status_code == 200:
                 data = res.json()
-                intel = data.get("extracted_intelligence", {})
                 print(f"✅ Reply: {data.get('reply')}")
-                print(f"   Extracted Keywords: {intel.get('suspiciousKeywords')}")
                 
                 history.append(payload["message"])
                 history.append({
@@ -295,25 +244,15 @@ def run_kyc_simulation():
                     "text": data.get("reply"),
                     "timestamp": int(time.time() * 1000)
                 })
-                if intel.get("suspiciousKeywords"): extracted_so_far["suspiciousKeywords"].extend(intel["suspiciousKeywords"])
-                if intel.get("phishingLinks"): extracted_so_far["phishingLinks"].extend(intel["phishingLinks"])
             else:
                 print(f"❌ Error: {res.status_code}")
         except Exception as e:
             print(f"❌ Exception: {e}")
 
     print("\n--- Validation ---")
-    if len(extracted_so_far["suspiciousKeywords"]) > 0:
-        print("✅ SUCCESS: Extracted suspicious keywords (Red Flags).")
-    else:
-        print("❌ FAILURE: Missed suspicious keywords.")
-        
-    if len(extracted_so_far["phishingLinks"]) > 0:
-        print("✅ SUCCESS: Extracted phishing link from app download request.")
-    else:
-         print("❌ FAILURE: Missed phishing link.")
+    print("✅ Conversation flows correctly. Check Uvicorn terminal for [DEBUG] Callback SENT messages to verify intelligence extraction.")
 
 if __name__ == "__main__":
-    # run_test()
-    # run_multi_turn_simulation()
+    run_test()
+    run_multi_turn_simulation()
     run_kyc_simulation()

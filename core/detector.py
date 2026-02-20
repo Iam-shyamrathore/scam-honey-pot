@@ -55,17 +55,22 @@ async def classify_with_ai(text: str) -> Tuple[bool, float, str, str]:
         
         Context & Rules:
         1. Context: User is receiving this message (SMS/WhatsApp/Email).
-        2. Indian Scams: Look for UPI fraud, KYC pending, Electricity Bill cut, Job Offers, Lottery, Fake Rewards/iPhone.
+        2. Known Indian Scams: Look for UPI fraud, KYC pending, Job Offers, Lottery, Fake Rewards/iPhone.
         3. Phishing: Suspicious links (bit.ly, fake domains) are 100% scam.
-        4. Urgency: 'Immediately', 'Within 2 hours', 'Account blocked' are strong indicators.
-        5. Unsolicited: If it asks for money/OTP/personal info out of nowhere, it is a scam.
+        4. Urgency/Threats: 'Immediately', 'Account blocked', 'Police', or 'Parcel seized' are strong indicators.
+        5. Unsolicited requests for money/OTP/personal info out of nowhere is a scam.
+        6. **Edge Cases**: 
+            - "Digital Arrest" (claims to be CBI, Police, Customs, FedEx parcel seized).
+            - "Part-Time Job" (like YouTube videos, hotel reviews, crypto tasks).
+            - "Electricity Disconnection" (Targeting 9PM power cuts for unpaid bills).
+            - "Pig-Butchering" (Romance/friendly chat pivoting to crypto/trading tips).
         
         Output format:
         {{
             "is_scam": boolean, 
             "confidence": float (0.0-1.0), 
             "reason": "Brief explanation",
-            "scam_type": "Bank Fraud" | "UPI Fraud" | "Phishing" | "Job Scam" | "Other" | "None"
+            "scam_type": "Bank Fraud" | "UPI Fraud" | "Phishing" | "Job Scam" | "Digital Arrest" | "Other" | "None"
         }}
         """
         # print(f"\n[DEBUG] DETECTOR PROMPT:\n{prompt}\n")

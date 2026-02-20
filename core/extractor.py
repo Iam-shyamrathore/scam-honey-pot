@@ -34,6 +34,10 @@ async def extract_with_ai(text: str) -> ExtractedIntelligence:
         - upiIds: UPI IDs (e.g., name@bank)
         - phishingLinks: Suspicious URLs
         - suspiciousKeywords: Identify key red flags, urgency tactics, or requests for sensitive info (e.g., "PAN", "Aadhar", "OTP", "urgent", "blocked", "KYC", "police", "arrest", "suspend").
+        - emailAddresses: Any email addresses mentioned
+        - caseIds: Any case numbers, reference IDs, or file numbers mentioned
+        - policyNumbers: Any insurance policy numbers mentioned
+        - orderNumbers: Any order or tracking numbers mentioned
         
         If nothing found for a category, use empty list [].
         
@@ -43,7 +47,11 @@ async def extract_with_ai(text: str) -> ExtractedIntelligence:
             "bankAccounts": [],
             "upiIds": [],
             "phishingLinks": [],
-            "suspiciousKeywords": []
+            "suspiciousKeywords": [],
+            "emailAddresses": [],
+            "caseIds": [],
+            "policyNumbers": [],
+            "orderNumbers": []
         }}
         """
         response = await model.generate_content_async(prompt)
@@ -56,7 +64,11 @@ async def extract_with_ai(text: str) -> ExtractedIntelligence:
             bankAccounts=data.get("bankAccounts", []),
             upiIds=data.get("upiIds", []),
             phishingLinks=data.get("phishingLinks", []),
-            suspiciousKeywords=data.get("suspiciousKeywords", [])
+            suspiciousKeywords=data.get("suspiciousKeywords", []),
+            emailAddresses=data.get("emailAddresses", []),
+            caseIds=data.get("caseIds", []),
+            policyNumbers=data.get("policyNumbers", []),
+            orderNumbers=data.get("orderNumbers", [])
         )
     except Exception as e:
         print(f"AI Extraction Error: {e}")
@@ -106,6 +118,11 @@ async def extract_all(text: str) -> ExtractedIntelligence:
     data.phishingLinks = list(set(data.phishingLinks + ai_data.phishingLinks))
     data.phoneNumbers = list(set(data.phoneNumbers + ai_data.phoneNumbers))
     data.bankAccounts = list(set(data.bankAccounts + ai_data.bankAccounts))
+    data.suspiciousKeywords = list(set(data.suspiciousKeywords + ai_data.suspiciousKeywords))
+    data.emailAddresses = list(set(data.emailAddresses + ai_data.emailAddresses))
+    data.caseIds = list(set(data.caseIds + ai_data.caseIds))
+    data.policyNumbers = list(set(data.policyNumbers + ai_data.policyNumbers))
+    data.orderNumbers = list(set(data.orderNumbers + ai_data.orderNumbers))
 
     return data
 
